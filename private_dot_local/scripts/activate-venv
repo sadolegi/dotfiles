@@ -1,0 +1,48 @@
+activate() {
+    local dir="${1:-$(pwd)}"
+
+    if [ -n "$VIRTUAL_ENV" ]; then
+        echo "Virtual environment already active: $VIRTUAL_ENV"
+        return 0
+    fi
+
+    local venv_path
+    if [ -d "$dir/.venv" ]; then
+        venv_path="$dir/.venv"
+    elif [ -d "$dir/venv" ]; then
+        venv_path="$dir/venv"
+    else
+        echo "No virtual environment found in $dir (.venv or venv)"
+        return 1
+    fi
+
+    local shell_name
+    shell_name=$(basename "$SHELL")
+
+    case "$shell_name" in
+        bash|sh|zsh)
+            if [ -f "$venv_path/bin/activate" ]; then
+                # shellcheck disable=SC1090
+                source "$venv_path/bin/activate"
+                echo "Activated virtual environment: $venv_path ($shell_name)"
+            else
+                echo "No activate script found in $venv_path/bin"
+                return 1
+            fi
+            ;;
+        fish)
+            if [ -f "$venv_path/bin/activate.fish" ]; then
+                # shellcheck disable=SC1090
+                source "$venv_path/bin/activate.fish"
+                echo "Activated virtual environment: $venv_path (fish)"
+            else
+                echo "No activate.fish found in $venv_path/bin"
+                return 1
+            fi
+            ;;
+        *)
+            echo "Shell $shell_name not supported"
+            return 2
+            ;;
+    esac
+}
